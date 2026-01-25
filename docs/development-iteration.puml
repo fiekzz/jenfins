@@ -1,0 +1,99 @@
+@startuml Development iteration
+
+actor Developer as dev
+
+box "Bitbucket" #LightGreen
+participant Repository as repo
+end box
+
+box "CI/CD Pipeline" #LightBlue
+participant Jenkins as jenkins
+end box
+
+
+box "ServerPipeline" #LightYellow
+
+participant ConnyJenfins as cj
+participant "CDN" as cdn
+participant TelegramBot as tg
+
+end box
+
+actor Tester as tester
+
+' -------- Workflow --------'
+
+== Development Iteration ==
+
+note left dev
+    Developer pushes code
+    to the working branch
+end note
+
+dev -> repo: Push Code
+
+dev -> cj: Trigger deployment
+activate cj
+cj -> jenkins: Send build request
+deactivate cj
+activate jenkins
+
+note left repo
+    Repository notifies Jenkins of
+    new code from working branch
+end note
+jenkins -> repo: Pull latest code
+jenkins -> jenkins: Run tests
+activate jenkins
+
+alt Test Failed
+    jenkins -> cj: Notify test failure
+    activate cj
+    deactivate jenkins
+    cj -> tg: Notify tester of test failure
+    deactivate cj
+
+    activate tg
+    tg -> tester: Sends test failure notification
+    tg -> dev: Sends test failure notification
+    deactivate tg
+end
+
+jenkins -> jenkins: Build application
+activate jenkins
+jenkins -> cj: Notify build status
+deactivate jenkins
+
+alt Pipeline Successful
+
+    jenkins -> cj: Send build artifacts
+    deactivate jenkins
+    activate cj
+
+    cj -> cdn: Push build artifacts (metadata, manifest, build file)
+    cj -> tg: Send deployment notification
+    deactivate cj
+    activate tg
+    tg -> tester: Sends notification
+    deactivate tg
+    activate tester
+    tester -> cdn: Access build artifacts
+    deactivate tester
+
+else Pipeline Failed
+
+    jenkins -> cj: Send failure notification
+    activate cj
+    cj -> tg: Notify tester of build failure
+    deactivate cj
+    activate tg
+    tg -> tester: Sends failure notification
+    deactivate tg
+    activate tester
+    tester -> tg: Receive failure notification
+    deactivate tester
+    activate tg
+
+end
+
+@enduml

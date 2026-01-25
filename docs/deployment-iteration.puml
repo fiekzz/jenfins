@@ -1,0 +1,131 @@
+@startuml Deployment iteration
+
+actor Developer as dev
+
+box "Bitbucket" #LightGreen
+participant Repository as repo
+end box
+
+box "CI/CD Pipeline" #LightBlue
+participant Jenkins as jenkins
+end box
+
+
+box "ServerPipeline" #LightYellow
+
+participant ConnyJenfins as cj
+participant "CDN" as cdn
+participant TelegramBot as tg
+
+end box
+
+participant Appstore as appstore
+
+actor Tester as tester
+
+' -------- Workflow --------'
+== Continuous Integration ==
+
+note left dev
+    Developer pushes code
+    to the version directory branch
+    e.g. version/1.0.0+10
+end note
+
+dev -> repo: Push Code
+
+dev -> cj: Trigger deployment
+activate cj
+cj -> jenkins: Send build request
+deactivate cj
+activate jenkins
+
+note left repo
+    Repository notifies Jenkins of
+    new code from working branch
+end note
+jenkins -> repo: Pull latest code
+jenkins -> jenkins: Run tests
+activate jenkins
+
+alt Test Failed
+    jenkins -> cj: Notify test failure
+    deactivate jenkins
+    activate cj
+    cj -> tg: Notify tester of test failure
+    deactivate cj
+
+    activate tg
+    tg -> tester: Sends test failure notification
+    tg -> dev: Sends test failure notification
+    deactivate tg
+end
+
+jenkins -> jenkins: Build application
+activate jenkins
+jenkins -> cj: Notify build status
+deactivate jenkins
+
+alt Pipeline Successful
+
+    jenkins -> cj: Send build artifacts
+    deactivate jenkins
+    activate cj
+
+    cj -> cdn: Push build artifacts (metadata, manifest, build file)
+    cj -> tg: Send deployment notification
+    deactivate cj
+    activate tg
+    tg -> tester: Sends notification
+    deactivate tg
+    activate tester
+    tester -> cdn: Access build artifacts
+    deactivate tester
+
+else Pipeline Failed
+
+    jenkins -> cj: Send failure notification
+    activate cj
+    cj -> tg: Notify tester of build failure
+    deactivate cj
+    activate tg
+    tg -> tester: Sends failure notification
+    deactivate tg
+
+end
+
+== Continuous Deployment ==
+
+dev -> cj: Trigger deployment
+
+note left cj
+    ConnyJenfins fetches
+    the latest build artifacts
+    based on the version directory
+end note
+
+activate cj
+cj -> cdn: Fetch latest build artifacts
+deactivate cj
+
+activate cdn
+cdn -> cj: Send build artifacts
+deactivate cdn
+activate cj
+
+cj -> appstore: Submit build for review
+deactivate cj
+activate appstore
+appstore -> cj: Notify submission status
+deactivate appstore
+activate cj
+cj -> tg: Notify tester of submission status
+deactivate cj
+activate tg
+tg -> tester: Sends submission notification
+deactivate tg
+activate tester
+tester -> appstore: Check submission status
+deactivate tester
+
+@enduml
