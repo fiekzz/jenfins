@@ -1,15 +1,20 @@
-import { toDataURL } from 'qrcode'
+import * as qr from 'qr-image'
 
 export async function qrcodeGenerator(data: string): Promise<File | undefined> {
     try {
 
-        const dataUrl = await toDataURL(data, { errorCorrectionLevel: 'H' })
+        // Generate QR code as PNG buffer
+        const qrBuffer = qr.imageSync(data, { 
+            type: 'png',
+            size: 10,
+            margin: 1,
+            ec_level: 'H'
+        })
 
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-
-        // 3. Return as a standard File object
-        return new File([blob], 'qrcode.png', { type: 'image/png' });
+        // Convert buffer to Uint8Array for Blob compatibility
+        const uint8Array = new Uint8Array(qrBuffer as Buffer)
+        const blob = new Blob([uint8Array], { type: 'image/png' })
+        return new File([blob], 'qrcode.png', { type: 'image/png' })
 
     } catch (error) {
 
