@@ -1,3 +1,6 @@
+// Polyfills for Cloudflare Workers compatibility
+import './polyfills'
+
 import { Hono } from 'hono'
 import { sendTelegramMessage, sendTelegramMessageWithDocument, sendTelegramMessageWithPhoto } from './services/send-telegram-message'
 import postNotify from './controllers/jenkins/post-notify'
