@@ -31,7 +31,21 @@ const bodySchema = z.object({
 
 postUploadArtifacts.post(
     "/upload-artifacts",
-    zValidator("form", bodySchema),
+    zValidator("form", bodySchema, (result, c) => {
+        if (!result.success) {
+
+            const error = JSON.parse(result.error.message)
+
+            const errorMessage = error[0]?.message || "Invalid request body"
+
+            return ContextError(
+                c,
+                { code: 2202, message: errorMessage },
+                "The request body is invalid.",
+                { errors: error }
+            )
+        }
+    }),
     async (c) => {
         try {
 

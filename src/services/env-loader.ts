@@ -19,6 +19,8 @@ class EnvLoader {
     S3Path: string | undefined
     S3Region: string | undefined
 
+    JenkinsEndpoint: string | undefined
+
 
     constructor(env?: any) {
         const envSource = env || process.env
@@ -39,6 +41,7 @@ class EnvLoader {
         this.S3Path = envSource.S3_PATH
         this.S3Region = envSource.S3_REGION
 
+        this.JenkinsEndpoint = envSource.JENKINS_ENDPOINT
         this.verifyEnv()
     }
 

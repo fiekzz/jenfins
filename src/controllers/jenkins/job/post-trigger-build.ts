@@ -8,6 +8,7 @@ import { GETJenkinsCrumb, POSTJenkinsBuildTrigger } from "../../../services/repo
 import { ContextSuccess } from "../../../utils/response/context-success";
 import { ContextError } from "../../../utils/response/context-error";
 import { IJenkinsBuildTriggerRequest } from "../../../services/repository/models";
+import EnvLoader from "../../../services/env-loader";
 
 const postTriggerBuild = new Hono()
 
@@ -46,8 +47,16 @@ postTriggerBuild.post(
 
             const body = await c.req.json<BodySchema>()
 
+            const envLoader = EnvLoader.getInstance()
+
+            const jenkinsEndpoint = envLoader.JenkinsEndpoint
+
+            if (!jenkinsEndpoint) {
+                throw new Error("Jenkins endpoint is not configured")
+            }
+
             const getCrumbResponse = await GETJenkinsCrumb(
-                'https://fiekzz-jenkins.fiekzz.com',
+                jenkinsEndpoint,
                 body.username,
                 body.password,
             )
@@ -62,7 +71,7 @@ postTriggerBuild.post(
                 username: body.username,
                 password: body.password,
                 cookie: getCrumbResponse.cookie,
-                jenkinsUrl: 'https://fiekzz-jenkins.fiekzz.com',
+                jenkinsUrl: jenkinsEndpoint,
                 jobName: 'Flutter-iOS-Build',
                 parameters: {
                     CUSTOM_BRANCH: body.branchName,
