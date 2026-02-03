@@ -21,5 +21,6 @@ export interface IJenkinsBuildTriggerRequest {
         BUILD_VARIANT: BuildVariant;
         MESSAGE?: string;
         token?: string;
+        BEARER_TOKEN?: string;
     },
 }

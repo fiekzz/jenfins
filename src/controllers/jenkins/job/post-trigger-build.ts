@@ -9,6 +9,8 @@ import { ContextSuccess } from "../../../utils/response/context-success";
 import { ContextError } from "../../../utils/response/context-error";
 import { IJenkinsBuildTriggerRequest } from "../../../services/repository/models";
 import EnvLoader from "../../../services/env-loader";
+import AuthenticationService, { IGenerateTokenOptions } from "../../../services/auth/authentication-service";
+import { appValidator } from "../../../services/hono/validator";
 
 const postTriggerBuild = new Hono()
 
@@ -26,21 +28,7 @@ type BodySchema = z.infer<typeof bodySchema>
 
 postTriggerBuild.post(
     '/trigger-build',
-    zValidator("json", bodySchema, (result, c) => {
-        if (!result.success) {
-
-            const error = JSON.parse(result.error.message)
-
-            const errorMessage = error[0]?.message || "Invalid request body"
-
-            return ContextError(
-                c,
-                { code: 2302, message: errorMessage },
-                "The request body is invalid.",
-                { errors: error }
-            )
-        }
-    }),
+    appValidator('json', bodySchema),
     async (c) => {
 
         try {
@@ -55,6 +43,9 @@ postTriggerBuild.post(
                 throw new Error("Jenkins endpoint is not configured")
             }
 
+            // Initialize AuthenticationService with the JWT secret
+            const authenticationService = AuthenticationService.getInstance()
+
             const getCrumbResponse = await GETJenkinsCrumb(
                 jenkinsEndpoint,
                 body.username,
@@ -64,6 +55,13 @@ postTriggerBuild.post(
             if (!getCrumbResponse?.data?.crumb || !getCrumbResponse?.data?.crumbRequestField) {
                 throw new Error("Failed to fetch Jenkins crumb")
             }
+
+            const config: IGenerateTokenOptions = {
+                sub: body.username,
+                exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour expiration
+            }
+            
+            const token = await authenticationService.generateToken(config)
 
             const request: IJenkinsBuildTriggerRequest = {
                 crumb: getCrumbResponse.data.crumb,
@@ -79,6 +77,7 @@ postTriggerBuild.post(
                     BUILD_VARIANT: body.buildVariant,
                     MESSAGE: body.message,
                     token: body.token,
+                    BEARER_TOKEN: token,
                 },
             }
 

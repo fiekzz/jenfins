@@ -49,6 +49,7 @@ export async function POSTJenkinsBuildTrigger(
         'BUILD_VARIANT': props.parameters.BUILD_VARIANT,
         'MESSAGE': props.parameters.MESSAGE || '',
         'token': props.parameters.token || '',
+        'BEARER_TOKEN': props.parameters.BEARER_TOKEN || '',
     }
 
     const options: NetworkRequestableOptions<null> = {

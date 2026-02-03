@@ -21,6 +21,7 @@ class EnvLoader {
 
     JenkinsEndpoint: string | undefined
 
+    JwtSecretKey: string | undefined
 
     constructor(env?: any) {
         const envSource = env || process.env
@@ -42,6 +43,9 @@ class EnvLoader {
         this.S3Region = envSource.S3_REGION
 
         this.JenkinsEndpoint = envSource.JENKINS_ENDPOINT
+
+        this.JwtSecretKey = envSource.JWT_SECRET_KEY
+
         this.verifyEnv()
     }
 
@@ -63,6 +67,9 @@ class EnvLoader {
             throw new Error("S3 environment variables are not properly set.")
         }
 
+        if (!this.JwtSecretKey) {
+            throw new Error("JWT secret key is not properly set.")
+        }
     }
 
     public static getInstance(env?: any): EnvLoader {
