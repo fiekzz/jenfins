@@ -22,5 +22,6 @@ export interface IJenkinsBuildTriggerRequest {
         MESSAGE?: string;
         token?: string;
         BEARER_TOKEN?: string;
+        IPA_DISTRIBUTION_TYPE?: string;
     },
 }

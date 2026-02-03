@@ -11,6 +11,7 @@ import { IJenkinsBuildTriggerRequest } from "../../../services/repository/models
 import EnvLoader from "../../../services/env-loader";
 import AuthenticationService, { IGenerateTokenOptions } from "../../../services/auth/authentication-service";
 import { appValidator } from "../../../services/hono/validator";
+import { IPADistributionType } from "../../../utils/ipa-distribution-type";
 
 const postTriggerBuild = new Hono()
 
@@ -22,6 +23,7 @@ const bodySchema = z.object({
     buildVariant: z.string().transform((val) => val.toLowerCase()).pipe(z.enum(Object.values(BuildVariant))).refine((type) => Object.values(BuildVariant).includes(type), { message: "Invalid build variant" }),
     message: z.string().optional(),
     token: z.string().optional(),
+    ipaDistributionType: z.string().optional().transform((val) => val?.toLowerCase()).pipe(z.enum(Object.values(IPADistributionType))).refine((type) => type === undefined || Object.values(IPADistributionType).includes(type), { message: "Invalid IPA distribution type" }),
 })
 
 type BodySchema = z.infer<typeof bodySchema>
@@ -78,6 +80,7 @@ postTriggerBuild.post(
                     MESSAGE: body.message,
                     token: body.token,
                     BEARER_TOKEN: token,
+                    IPA_DISTRIBUTION_TYPE: body.ipaDistributionType || '',
                 },
             }
 
