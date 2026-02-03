@@ -8,7 +8,7 @@ import { AwsClient } from "aws4fetch";
 import { ContextSuccess } from "../../../utils/response/context-success";
 import { ContextError } from "../../../utils/response/context-error";
 import { CdnManager, IPresignedConfig } from "../../../services/cdn-manager.ts/cdn-manager";
-import AuthenticationService from "../../../services/auth/authentication-service";
+import AuthenticationService, { authenticatedMiddleware } from "../../../services/auth/authentication-service";
 
 
 const postRequestUpload = authenticatedAppRoute()
@@ -23,10 +23,7 @@ type BodySchema = z.infer<typeof bodySchema>
 
 postRequestUpload.post(
     '/session/request-upload',
-    async (c, next) => {
-        const authService = AuthenticationService.getInstance()
-        return authService.checkRevokation(c, next)
-    },
+    authenticatedMiddleware,
     appValidator('json', bodySchema),
     async (c) => {
 

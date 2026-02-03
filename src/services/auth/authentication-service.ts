@@ -89,8 +89,13 @@ class AuthenticationService {
 
     public static resetInstance(): void {
         this.getInstance().clearRevokedTokens();
-        AuthenticationService.instance = undefined as any;   
+        AuthenticationService.instance = undefined as any;
     }
 }
 
 export default AuthenticationService;
+
+export const authenticatedMiddleware = async (c: Context, next: Next) => {
+    const authService = AuthenticationService.getInstance()
+    return authService.checkRevokation(c, next)
+}

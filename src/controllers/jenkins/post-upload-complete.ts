@@ -9,7 +9,7 @@ import { CdnManager } from "../../services/cdn-manager.ts/cdn-manager";
 import { qrcodeGenerator } from "../../services/qrcode/qrcode-generator";
 import { sendTelegramMessage, sendTelegramMessageWithPhoto } from "../../services/send-telegram-message";
 import { ContextSuccess } from "../../utils/response/context-success";
-import AuthenticationService from "../../services/auth/authentication-service";
+import AuthenticationService, { authenticatedMiddleware } from "../../services/auth/authentication-service";
 
 
 const postUploadComplete = authenticatedAppRoute()
@@ -30,10 +30,7 @@ type BodySchema = z.infer<typeof bodySchema>
 
 postUploadComplete.post(
     '/session/upload-complete',
-    async (c, next) => {
-        const authService = AuthenticationService.getInstance()
-        return authService.checkRevokation(c, next)
-    },
+    authenticatedMiddleware,
     appValidator('json', bodySchema),
     async (c) => {
         try {

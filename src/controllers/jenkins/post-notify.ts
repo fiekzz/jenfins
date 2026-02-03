@@ -6,7 +6,7 @@ import { sendTelegramMessage } from "../../services/send-telegram-message";
 import { BuildStatus } from "../../utils/build-status";
 import { TelegramMessages } from "../../utils/messages/telegram-messages";
 import { zValidator } from "@hono/zod-validator";
-import AuthenticationService from "../../services/auth/authentication-service";
+import AuthenticationService, { authenticatedMiddleware } from "../../services/auth/authentication-service";
 import { authenticatedAppRoute } from "../../services/hono/hono-app";
 import { appValidator } from "../../services/hono/validator";
 
@@ -24,10 +24,7 @@ type BodySchema = z.infer<typeof bodySchema>
 
 postNotify.post(
     "/session/notify",
-    async (c, next) => {
-        const authService = AuthenticationService.getInstance()
-        return authService.checkRevokation(c, next)
-    },
+    authenticatedMiddleware,
     appValidator('json', bodySchema),
     async (c) => {
 
