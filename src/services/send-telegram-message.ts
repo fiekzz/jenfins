@@ -70,7 +70,7 @@ export async function sendTelegramMessageWithPhoto(photo: File, caption: string 
 
     if (caption) {
         formData.append('caption', caption)
-        formData.append('parse_mode', 'Markdown')
+        formData.append('parse_mode', 'HTML')
     }
 
     const url = `https://api.telegram.org/bot${botToken}/sendPhoto`

@@ -12,16 +12,17 @@ import getRoot from './controllers/get-root'
 import { honoApp } from './services/hono/hono-app'
 import postTriggerBuild from './controllers/jenkins/job/post-trigger-build'
 import EnvLoader from './services/env-loader'
+import postRequestUpload from './controllers/jenkins/v2/post-request-upload'
+import postUploadComplete from './controllers/jenkins/post-upload-complete'
+import AuthenticationService from './services/auth/authentication-service'
 
 const app = honoApp()
 
 // Initialize environment on each request
 app.use('*', async (c, next) => {
     try {
-        EnvLoader.reset()
+        // EnvLoader.reset()
         const envLoader = EnvLoader.getInstance(c.env)
-
-        console.log(envLoader)
 
     } catch (error) {
         console.error("Error initializing environment loader:", error)
@@ -35,5 +36,7 @@ app.route('/', getRoot)
 app.route('/jenkins', postNotify)
 app.route('/jenkins', postUploadArtifacts)
 app.route('/jenkins/job', postTriggerBuild)
+app.route('/jenkins/v2', postRequestUpload)
+app.route('/jenkins/v2', postUploadComplete)
 
 export default app

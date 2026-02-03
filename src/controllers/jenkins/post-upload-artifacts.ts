@@ -121,19 +121,13 @@ postUploadArtifacts.post(
                             throw new Error("Failed to generate QR code for IPA manifest")
                         }
 
-                        // Escape special characters for Telegram Markdown
-                        const escapedBuildUrl = uploadBuild.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
-                        const escapedManifestUrl = uploadManifest.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
-                        const escapedMessage = (body.data.message ?? "No additional message provided.").replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
-                        const escapedEnvironment = (body.data.buildEnvironment ?? "Not specified.").replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&')
-
                         const telegramResponse = await sendTelegramMessageWithPhoto(
                             photo,
-                            `New IPA build uploaded for *Flutter-pipeline* - Build #${body.data.buildNumber} \n\n` +
-                            `Build URL: ${escapedBuildUrl} \n\n` +
-                            `Manifest URL: ${escapedManifestUrl} \n\n` +
-                            `Message: ${escapedMessage} \n\n` +
-                            `Build Environment: ${escapedEnvironment}`
+                            `New IPA build uploaded for <b>Flutter-pipeline</b> - Build #${body.data.buildNumber}\n\n` +
+                            `Build URL: ${uploadBuild}\n\n` +
+                            `Manifest URL: ${uploadManifest}\n\n` +
+                            `Message: ${body.data.message ?? "No additional message provided."}\n\n` +
+                            `Build Environment: ${body.data.buildEnvironment ?? "Not specified."}`
                         )
 
                         return ContextSuccess(
@@ -158,7 +152,6 @@ postUploadArtifacts.post(
                 { message: "Artifacts uploaded successfully", code: 2200 },
                 "Artifacts uploaded successfully"
             )
-
 
         } catch (error) {
 

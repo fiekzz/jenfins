@@ -1,7 +1,19 @@
 import { fileTypeFromBuffer } from "file-type";
 import { IUploadTaskFile, S3FileUploader } from "./s3-file-uploader";
 import EnvLoader from "../env-loader";
+import { AwsClient } from "aws4fetch";
 
+export interface IPresignedObject {
+    presignedUrl: string;
+    fileKey: string;
+    expiresIn: number;
+}
+
+export interface IPresignedConfig {
+    mediaKey: string;
+    expiresIn?: number;
+    path?: string | null;
+}
 
 export interface ICdnManagerFile {
     file: File
@@ -54,5 +66,34 @@ export class CdnManager {
         await this.uploader.deleteObjectFromS3({
             keys: mediaKeys
         })
+    }
+
+    async createPresignedUrl(config: IPresignedConfig): Promise<IPresignedObject> {
+
+        const envLoader = this.envLoader
+
+        const client = new AwsClient({
+            accessKeyId: envLoader.S3AccessKeyId!,
+            secretAccessKey: envLoader.S3SecretAccessKey!,
+            service: 's3',
+            region: envLoader.S3Region,
+        })
+
+        const objectUrl = `${envLoader.S3Endpoint}/${envLoader.BucketName}/${config.mediaKey}?X-Amz-Expires=${config.expiresIn ?? 1800}`
+
+        const signed = await client.sign(
+            new Request(objectUrl, { method: 'PUT' }),
+            { aws: { signQuery: true } }
+        )
+
+        const presignedUrl = signed.url
+
+        const presignedObject: IPresignedObject = {
+            presignedUrl,
+            fileKey: config.mediaKey,
+            expiresIn: config.expiresIn ?? 1800
+        }
+
+        return presignedObject
     }
 }

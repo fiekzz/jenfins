@@ -6,8 +6,11 @@ import { sendTelegramMessage } from "../../services/send-telegram-message";
 import { BuildStatus } from "../../utils/build-status";
 import { TelegramMessages } from "../../utils/messages/telegram-messages";
 import { zValidator } from "@hono/zod-validator";
+import AuthenticationService from "../../services/auth/authentication-service";
+import { authenticatedAppRoute } from "../../services/hono/hono-app";
+import { appValidator } from "../../services/hono/validator";
 
-const postNotify = new Hono()
+const postNotify = authenticatedAppRoute()
 
 const bodySchema = z.object({
     jobName: z.string(),
@@ -20,8 +23,12 @@ const bodySchema = z.object({
 type BodySchema = z.infer<typeof bodySchema>
 
 postNotify.post(
-    "/notify",
-    zValidator("json", bodySchema),
+    "/session/notify",
+    async (c, next) => {
+        const authService = AuthenticationService.getInstance()
+        return authService.checkRevokation(c, next)
+    },
+    appValidator('json', bodySchema),
     async (c) => {
 
         try {
