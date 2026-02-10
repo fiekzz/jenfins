@@ -11,8 +11,6 @@ class EnvLoader {
     CdnUrl: string | undefined
     BucketName: string | undefined
 
-    R2Token: string | undefined
-
     S3AccessKeyId: string | undefined
     S3SecretAccessKey: string | undefined
     S3Endpoint: string | undefined
@@ -33,8 +31,6 @@ class EnvLoader {
 
         this.CdnUrl = envSource.CDN_URL
         this.BucketName = envSource.BUCKET_NAME
-
-        this.R2Token = envSource.R2_TOKEN
 
         this.S3AccessKeyId = envSource.S3_ACCESS_KEY_ID
         this.S3SecretAccessKey = envSource.S3_SECRET_ACCESS_KEY
@@ -57,10 +53,6 @@ class EnvLoader {
 
         if (!this.CdnUrl || !this.BucketName) {
             throw new Error("CDN environment variables are not properly set.")
-        }
-
-        if (!this.R2Token) {
-            throw new Error("R2 environment variables are not properly set.")
         }
 
         if (!this.S3AccessKeyId || !this.S3SecretAccessKey || !this.S3Endpoint || !this.S3Path || !this.S3Region) {
