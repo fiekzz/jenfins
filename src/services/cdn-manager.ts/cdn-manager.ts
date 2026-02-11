@@ -51,7 +51,7 @@ export class CdnManager {
             contentType: fileMime?.mime ?? document.type
         })
 
-        const fullPath = `${this.envLoader.CdnUrl}/${prop.mediaKey}`
+        const fullPath = `${this.envLoader.CdnUrl}/${this.envLoader.BucketName}/${prop.mediaKey}`
 
         return fullPath
     }
