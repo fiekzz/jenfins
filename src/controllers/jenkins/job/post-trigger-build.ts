@@ -24,6 +24,7 @@ const bodySchema = z.object({
     message: z.string().optional(),
     token: z.string().optional(),
     ipaDistributionType: z.string().optional().transform((val) => val?.toLowerCase()).pipe(z.enum(Object.values(IPADistributionType))).refine((type) => type === undefined || Object.values(IPADistributionType).includes(type), { message: "Invalid IPA distribution type" }),
+    jobName: z.string(),
 })
 
 type BodySchema = z.infer<typeof bodySchema>
@@ -72,7 +73,7 @@ postTriggerBuild.post(
                 password: body.password,
                 cookie: getCrumbResponse.cookie,
                 jenkinsUrl: jenkinsEndpoint,
-                jobName: 'Flutter-iOS-Build',
+                jobName: body.jobName,
                 parameters: {
                     CUSTOM_BRANCH: body.branchName,
                     BUILD_TYPE: body.buildType,
